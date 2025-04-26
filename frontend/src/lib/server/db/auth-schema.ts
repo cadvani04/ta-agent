@@ -1,5 +1,4 @@
 import { boolean, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
-import { BsDiscord } from 'react-icons/bs'
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -51,9 +50,24 @@ export const verification = pgTable('verification', {
 	updatedAt: timestamp('updated_at')
 })
 
-export const userData = pgTable('userData', {
-	course_id: text('course_id').primaryKey(),
-	discordID: text('discordID').notNull(),
-	//courseID & discord associated to that course
-	//plz add as necessary
+export const course = pgTable('course', {
+	id: text('id').primaryKey(),
+	canvasId: text('canvas_id'),
+	discordId: text('discord_id'),
+	// userId: text('user_id')
+	// 	.notNull()
+	// 	.references(() => user.id, { onDelete: 'cascade' }),
+})
+
+export const msg = pgTable('msg', {
+	id: text('id').primaryKey(),
+	isUser: boolean('is_user'), // user or bot
+	body: text('body'),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	courseId: text('course_id')
+		.notNull()
+		.references(() => course.id, { onDelete: 'cascade' }),
+	createdAt: timestamp('created_at'),
 })

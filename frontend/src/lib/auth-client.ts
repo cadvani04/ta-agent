@@ -7,7 +7,7 @@ const authClient = createAuthClient({
 export const logIn = async () => {
 	await authClient.signIn.social({
 		provider: 'google',
-		callbackURL: '/dashboard'
+		callbackURL: '/chat'
 		// errorCallbackURL: '/error',
 		// newUserCallbackURL: '/welcome'
 		// disableRedirect: true
