@@ -22,7 +22,7 @@ export async function handle({ event, resolve }) {
 		})
 
 		console.log('Session:', session)
-		if (!session) throw redirect(302, '/')
+		if (!session) throw redirect(401, '/')
 	}
 
 	return svelteKitHandler({ event, resolve, auth })
