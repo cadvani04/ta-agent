@@ -5,5 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "canvasapi>=3.3.0",
     "fastapi[standard]>=0.112.1",
+    "openai-agents>=0.0.13",
+    "python-dotenv>=1.0.1",
 ]
