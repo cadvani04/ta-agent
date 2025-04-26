@@ -169,7 +169,7 @@ def get_course(course_id: int):
 
 # Keep your existing Canvas agent endpoint
 @app.get("/agent")
-async def run(query: str):
+async def test_run(query: str):
     agent = Agent(
         name="canvas-lms-agent",
         instructions=(
