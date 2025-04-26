@@ -30,3 +30,15 @@ Get user profile
 List avatar options
 List user page views
 """
+
+from openai_tools import *
+
+def get_user(user_id: int):
+    # able to get the information about the user (name, sortable name) given the id
+    canvas = get_canvas()
+    canvas.get_user(0)
+    canvas.get_user(user_id)
+    user = canvas.get_user(user_id)
+    print(f"User ID: {user.id}")
+    print(f"Name: {user.name}")
+    print(f"Sortable Name: {user.sortable_name}") 

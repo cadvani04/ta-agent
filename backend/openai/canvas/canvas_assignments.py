@@ -1,6 +1,6 @@
 """
 Delete an assignment**
-List assignments**
+Get assignments**
 List assignments for user**
 Duplicate assignment
 List group members for a student on an assignment**
@@ -93,6 +93,9 @@ class AssignmentCreate(BaseModel):
     allowed_attempts: Optional[str] = None
     annotatable_attachment_id: Optional[str] = None
 
+class AssignmentEdit(AssignmentCreate):
+    name: Optional[str] = None  # just override this one field
+
 @function_tool()
 def create_assignment(course_id: int, assignment_data: AssignmentCreate):
     """
@@ -126,3 +129,128 @@ def create_assignment(course_id: int, assignment_data: AssignmentCreate):
     except KeyError:
         raise KeyError("Problem in create_assignment.")
 
+@function_tool()
+def get_assignments(course_id: int):
+    """
+    Retrieve all assignments for a specific Canvas course in a structured format.
+
+    This function fetches every assignment in a course and returns a clean, simplified 
+    list of dictionaries containing the most important details for each assignment, 
+    such as its name, description, due date, points possible, type of assignment, 
+    and publication status.
+
+    Args:
+        course_id (int): The Canvas course ID to fetch assignments from.
+
+    Returns:
+        List[Dict[str, Any]]: A list where each item represents an assignment, containing:
+            - 'id' (int): Assignment ID
+            - 'name' (str): Assignment name
+            - 'description' (str): HTML description (if any)
+            - 'due_at' (str or None): Due date in ISO 8601 format
+            - 'points_possible' (float): Maximum points for the assignment
+            - 'submission_types' (List[str]): List of allowed submission types
+            - 'is_quiz_assignment' (bool): Whether the assignment is a quiz
+            - 'published' (bool): Whether the assignment is visible to students
+            - 'html_url' (str): URL to view the assignment in Canvas
+
+    Raises:
+        Exception: If fetching assignments fails.
+
+    Notes:
+        - Unpublished assignments are included in the results.
+        - Some fields like `due_at` may be None if no due date is set.
+    """
+    canvas = get_canvas()
+    assignments = canvas.get_course(course_id).get_assignments()
+
+    formatted_assignments = []
+    for asgn in assignments:
+        formatted_assignments.append({
+            "id": asgn.id,
+            "name": asgn.name,
+            "description": asgn.description,
+            "due_at": asgn.due_at,  # ISO string or None
+            "points_possible": asgn.points_possible,
+            "submission_types": asgn.submission_types,
+            "is_quiz_assignment": asgn.is_quiz_assignment,
+            "published": asgn.published,
+            "html_url": asgn.html_url,
+        })
+
+    return formatted_assignments
+
+# @function_tool()
+def edit_assignment(
+    course_id: int,
+    assignment_id: int,
+    assignment_data: AssignmentEdit
+) -> Dict[str, Any]:
+    """
+    Edit fields of an existing assignment in a Canvas course.
+
+    This function updates only the provided fields on a Canvas assignment.  
+    It fetches the specified assignment, applies all keys present in the  
+    `assignment_data` Pydantic model, saves the changes via the API, and  
+    returns a cleaned-up dictionary of the updated assignment.
+
+    Args:
+        course_id (int): The Canvas course ID containing the assignment.
+        assignment_id (int): The ID of the assignment to update.
+        assignment_data (AssignmentEdit): A Pydantic model containing only
+            the fields to change. Possible fields include:
+            - name (str): New name of the assignment
+            - description (str): New HTML description
+            - due_at (datetime or str): New due date (ISO 8601)
+            - points_possible (float): New points possible
+            - published (bool): Whether the assignment is visible to students
+            - submission_types (List[str]): Allowed submission types
+            (Any other updatable Canvas assignment field.)
+
+    Returns:
+        Dict[str, Any]: A dictionary representing the updated assignment,
+        containing keys:
+            - 'id' (int)
+            - 'name' (str)
+            - 'description' (str)
+            - 'due_at' (str or None)
+            - 'points_possible' (float)
+            - 'submission_types' (List[str])
+            - 'is_quiz_assignment' (bool)
+            - 'published' (bool)
+            - 'html_url' (str)
+
+    Raises:
+        Exception: If the API request fails when saving edits.
+    """
+    canvas = get_canvas()
+    course = canvas.get_course(course_id)
+    assignment = course.get_assignment(assignment_id)
+
+    # Build the payload from only the fields provided
+    payload: Dict[str, Any] = {}
+    for field_name, value in assignment_data.dict(exclude_unset=True).items():
+        # Canvas API expects camelCase for some fields; adjust if needed
+        payload[field_name] = value
+
+    # Send the update request
+    updated_asgn = assignment.edit(**payload)
+
+    # Return a cleaned-up dict of the updated assignment
+    return {
+        "id": updated_asgn.id,
+        "name": updated_asgn.name,
+        "description": updated_asgn.description,
+        "due_at": updated_asgn.due_at,
+        "points_possible": updated_asgn.points_possible,
+        "submission_types": updated_asgn.submission_types,
+        "is_quiz_assignment": updated_asgn.is_quiz_assignment,
+        "published": updated_asgn.published,
+        "html_url": updated_asgn.html_url,
+    }
+
+    
+    
+def delete_assignment(assignment_id):
+    pass
+    
