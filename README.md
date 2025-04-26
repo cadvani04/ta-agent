@@ -1,2 +1,0 @@
-# ta-agent
-LAhacks project
