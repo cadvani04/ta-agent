@@ -21,8 +21,8 @@ app.add_middleware(
 
 @app.get("/basic")
 async def run():
-    print("Hi there from fastapi!")
-    return { "msg": "Hi" }
+    canvas = get_canvas()
+    return [{"id": c.id, "name": c.name, "account_id": c.account_id, "root_account_id": c.root_account_id} for c in canvas.get_courses()]
 
 class CourseCreate(BaseModel):
     """
