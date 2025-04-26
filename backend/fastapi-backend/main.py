@@ -1,12 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
-import httpx
-import asyncio
+import sys
 from canvasapi import Canvas
 from agents import Agent, Runner, function_tool
 from pydantic import BaseModel
-from typing import Optional, Literal, List
+from typing import Optional, Literal
+
+from discord_1 import agent as discord_read_agent
+from discord_read import agent as discord_uagent
+
+# discord read, discord testing (agent)
 
 app = FastAPI()
 
@@ -19,10 +23,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def startup_event():
+    discord_read_agent.run()
+    print("Starting up FastAPI server...")
+
 @app.get("/basic")
 async def run():
-    print("Hi there from fastapi!")
-    return { "msg": "Hi" }
+    canvas = get_canvas()
+    return [{"id": c.id, "name": c.name, "account_id": c.account_id, "root_account_id": c.root_account_id} for c in canvas.get_courses()]
+
 
 class CourseCreate(BaseModel):
     """
@@ -101,7 +111,6 @@ class CourseCreate(BaseModel):
     post_manually: Optional[bool] = None
 
 
-
 def get_canvas():
     """
     Helper function to create and return a Canvas API client instance.
@@ -166,24 +175,38 @@ def get_course(course_id: int):
     return {"id": c.id, "name": c.name, "start_at": c.start_at, "end_at": c.end_at}
 
 
+agent = Agent(
+    name="canvas-lms-agent",
+    instructions=(
+        "You are an assistant designed to help the user interact with the Canvas API. "
+        "Your primary purpose is to perform actions in the Canvas API given the tools, "
+        "and give information to the user based on what you can learn from querying "
+        "the Canvas API and what they ask."
+    ),
+    tools=[get_all_courses, get_course],
+    model="gpt-4o-mini",
+)
+
+print("agent init")
+
+class AgentReq(BaseModel):
+    prompt: str
+
+# add context to agent
+### ideally reset per request
+
 
 # Keep your existing Canvas agent endpoint
-@app.get("/agent")
-async def run(query: str):
-    agent = Agent(
-        name="canvas-lms-agent",
-        instructions=(
-            "You are an assistant designed to help the user interact with the Canvas API. "
-            "Your primary purpose is to perform actions in the Canvas API given the tools, "
-            "and give information to the user based on what you can learn from querying "
-            "the Canvas API and what they ask."
-        ),
-        tools=[get_all_courses, get_course],
-        model="gpt-4o-mini",
-    )
-
-    # result = await Runner.run(agent, "what are my courses?")
-    result = await Runner.run(agent, query)
+@app.post("/agent")
+async def test_run(req: AgentReq):
+    result = await Runner.run(agent, req.prompt)
     print(result.final_output)
     return result.final_output
+
+
+@app.post("/read_discord")
+async def d1(req: AgentReq):
+    result = await Runner.run(discord_read_agent, req.prompt)
+    return result.final_output
+
 

@@ -18,7 +18,6 @@ Restore a deleted user from a root account
 need to implement 2!
 """
 from openai_tools import *
-
 def get_users(account_id: int):
     canvas = get_canvas()
     account = canvas.get_account(account_id)
@@ -27,3 +26,8 @@ def get_users(account_id: int):
     # for att in account.attributes:
         # print(att)
     # print(account)
+    
+def get_account(account_id: int):
+    canvas = get_canvas()
+    account = canvas.get_account(account_id)
+    return account

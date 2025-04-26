@@ -6,7 +6,11 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "canvasapi>=3.3.0",
+    "cosmpy[aerial]>=0.9.3",
     "fastapi[standard]>=0.112.1",
+    "googleapis-common-protos>=1.70.0",
     "openai-agents>=0.0.13",
+    "protobuf>=5.29.4",
     "python-dotenv>=1.0.1",
+    "uagents>=0.22.3",
 ]

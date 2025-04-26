@@ -22,7 +22,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 			headers: event.request.headers
 		})
 
-		console.log('Session:', session)
+		// console.log('Session:', session)
 		if (!session) throw redirect(302, '/')
 	}
 
