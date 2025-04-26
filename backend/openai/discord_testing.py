@@ -12,9 +12,7 @@ load_dotenv()
 
 # Get Discord token from environment variables
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-# Default guild and channel IDs from your previous logs
-DEFAULT_GUILD_ID = "1365645827237871788"
-DEFAULT_CHANNEL_ID = "1365645829183901768"
+
 
 # Models for Discord API
 class CreateServerRequest(BaseModel):
@@ -238,6 +236,8 @@ async def main():
             "You are an assistant designed to help the user interact with Discord. "
             "You can create new Discord servers, list channels in a server, and read messages. "
             "When the user asks about Discord, use your tools to help them manage their Discord servers."
+            "THis is the info for CSE 30: DEFAULT_GUILD_ID = 1365757418998464593, DEFAULT_CHANNEL_ID = 1365757421938544721"
+            "THis is the info for MATh 19b: DEFAULT_GUILD_ID = 1365763509006372927, DEFAULT_CHANNEL_ID = 1365763511040610365"
         ),
         tools=[create_discord_server, list_discord_channels, read_discord_messages],
         model="gpt-4o-mini",
