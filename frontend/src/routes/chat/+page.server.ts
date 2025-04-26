@@ -43,7 +43,7 @@ export const actions = {
 		return {
 			success: true,
 			message, // user message
-			response: data.result // ai response
+			response: data // ai response
 		}
 	}
 } satisfies Actions

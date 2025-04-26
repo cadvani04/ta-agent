@@ -166,24 +166,29 @@ def get_course(course_id: int):
     return {"id": c.id, "name": c.name, "start_at": c.start_at, "end_at": c.end_at}
 
 
+agent = Agent(
+    name="canvas-lms-agent",
+    instructions=(
+        "You are an assistant designed to help the user interact with the Canvas API. "
+        "Your primary purpose is to perform actions in the Canvas API given the tools, "
+        "and give information to the user based on what you can learn from querying "
+        "the Canvas API and what they ask."
+    ),
+    tools=[get_all_courses, get_course],
+    model="gpt-4o-mini",
+)
+
+print("agent init")
+
+class AgentReq(BaseModel):
+    prompt: str
+
+# add context to agent
 
 # Keep your existing Canvas agent endpoint
-@app.get("/agent")
-async def test_run(query: str):
-    agent = Agent(
-        name="canvas-lms-agent",
-        instructions=(
-            "You are an assistant designed to help the user interact with the Canvas API. "
-            "Your primary purpose is to perform actions in the Canvas API given the tools, "
-            "and give information to the user based on what you can learn from querying "
-            "the Canvas API and what they ask."
-        ),
-        tools=[get_all_courses, get_course],
-        model="gpt-4o-mini",
-    )
-
-    # result = await Runner.run(agent, "what are my courses?")
-    result = await Runner.run(agent, query)
+@app.post("/agent")
+async def test_run(req: AgentReq):
+    result = await Runner.run(agent, req.prompt)
     print(result.final_output)
     return result.final_output
 

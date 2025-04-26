@@ -6,6 +6,10 @@
 	import { ScrollArea } from '@/components/ui/scroll-area'
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 	import { Loader, Send } from 'lucide-svelte'
+	import Markdown from 'svelte-exmarkdown'
+	import { gfmPlugin } from 'svelte-exmarkdown/gfm';
+
+	const plugins = [gfmPlugin()];
 
 	let { data, form } = $props()
 	// $inspect('data...', data)
@@ -33,43 +37,19 @@
 	let selectedClass = $state('')
 	let isLoading = $state(false)
 
-	// svelte-ignore non_reactive_update
-	let bottomDiv: HTMLDivElement
-	let formEl: HTMLFormElement
+	let bottomDiv = $state<HTMLDivElement | null>(null)
+	let formEl = $state<HTMLFormElement  | null>(null)
+	let inputEl
 
 	// $inspect(selectedClass, 'selectedClass')
 
 	const triggerContent = $derived(classes.find((cls) => cls === selectedClass) ?? 'Select a class')
 
-	// function sendMessage() {
-	// 	isLoading = true
-
-	// 	if (newMessage.trim()) {
-	// 		messages = [
-	// 			...messages,
-	// 			{
-	// 				id: Date.now(),
-	// 				content: newMessage,
-	// 				sender: 'user'
-	// 			}
-	// 		]
-	// 		newMessage = ''
-	// 		// simulate bot response
-	// 		setTimeout(() => {
-	// 			messages = [
-	// 				...messages,
-	// 				{
-	// 					id: Date.now() + 1,
-	// 					content: 'This is a response from the bot',
-	// 					sender: 'bot'
-	// 				}
-	// 			]
-	// 			isLoading = false
-	// 		}, 1000)
-	// 	}
-	// }
-
-	// Scroll to the bottom whenever messages update
+	$effect(() => {
+		if (messages.length > 0) {
+			bottomDiv.scrollIntoView({ behavior: 'smooth' })
+		}
+	})
 </script>
 
 {#if selectedClass}
@@ -88,7 +68,7 @@
 								: 'bg-secondary text-secondary-foreground'}
 							"
 						>
-							{msg.content}
+							<Markdown md={msg.content} {plugins} />
 						</span>
 					</div>
 				{/each}
@@ -101,6 +81,15 @@
 				use:enhance={() => {
 					isLoading = true
 
+					messages = [
+						...messages,
+						{
+							id: crypto.randomUUID(),
+							content: newMessage,
+							sender: 'user'
+						}
+					]
+
 					return async ({ update }) => {
 						await update()
 						if (form) {
@@ -112,10 +101,10 @@
 									sender: 'bot'
 								}
 							]
-							formEl.message.value = ''
+							newMessage = ''
 						}
-						bottomDiv.scrollIntoView({ behavior: 'smooth' })
 						isLoading = false
+						document.getElementById("chat-input").focus();
 					}
 				}}
 				method="post"
@@ -123,6 +112,7 @@
 				bind:this={formEl}
 			>
 				<Input
+					autofocus
 					placeholder="Ask a question..."
 					bind:value={newMessage}
 					onkeydown={(e) => {
@@ -134,6 +124,10 @@
 					}}
 					name="message"
 					class="flex-1"
+					autocomplete="off"
+					disabled={isLoading}
+					bind:this={inputEl}
+					id="chat-input"
 				/>
 
 				<Button type="submit" disabled={isLoading}>
