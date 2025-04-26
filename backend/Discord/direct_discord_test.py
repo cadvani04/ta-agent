@@ -8,7 +8,8 @@ load_dotenv()
 
 async def main():
     # Use the exact token from your successful PowerShell command
-    DISCORD_TOKEN = "MTM2NTU1NDg0NzcwNDgxMzU4OA.GtUcxd.fagld5gobHk5IAQd9V_UMJm9_hNYTyOTlH48q8"
+    DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+    print(DISCORD_TOKEN)
     
     headers = {
         "Authorization": f"Bot {DISCORD_TOKEN}",

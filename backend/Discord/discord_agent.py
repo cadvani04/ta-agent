@@ -126,6 +126,7 @@ async def handle_create_server(ctx: Context, req: CreateServerRequest) -> Create
             timestamp=int(time.time()),
             guild_id=guild['id'],
             invite_link=guild['invite_link']# Include the invite link in the response
+            
         )
     except Exception as e:
         ctx.logger.error(f"Failed to create server: {str(e)}")
