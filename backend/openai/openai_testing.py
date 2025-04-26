@@ -8,6 +8,7 @@ from openai_tools import *
 from canvas.canvas_courses import *
 from canvas.canvas_assignments import *
 from canvas.canvas_accounts import *
+from canvas.canvas_gradebook_history import *
 import inspect
 
 # Load environment variables from .env file
@@ -113,7 +114,7 @@ def main():
         print("Error: CANVAS_API_URL and CANVAS_API_TOKEN must be set in .env file")
         sys.exit(1)
     test_fns()
-    tool_list = [get_all_courses, get_course, create_assignment]
+    tool_list = [get_all_courses, get_course, create_assignment, get_grade_history_for_course, get_grade_history_for_assignment, get_grade_history_for_student]
 
     agent = Agent(name="Canvas Agent",
                   instructions="You are an assistant designed to help the user interact with the Canvas API. Your primary purpose is to perform actions in the Canvas API given the tools, and give information to the user based on what you can learn from querying the Canvas API and what they ask.",
