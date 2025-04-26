@@ -1,17 +1,9 @@
 <script lang="ts">
 	import { Button } from '@/components/ui/button'
-	import { signIn, signOut } from '@/auth/login'
+	import type { User } from 'better-auth'
 
-	const { data }: { data: { user: import('better-auth').User | null } } = $props()
+	const { data }: { data: { user: User | null } } = $props()
+	$inspect(data)
 </script>
 
-{#if data?.user}
-	<div>
-		<p>
-			{data.user.email}
-		</p>
-		<Button onclick={signOut}>Signout</Button>
-	</div>
-{:else}
-	<Button onclick={signIn}>Continue with google</Button>
-{/if}
+Welcome to TA Agent.
