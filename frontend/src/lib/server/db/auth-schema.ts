@@ -53,7 +53,9 @@ export const verification = pgTable('verification', {
 export const course = pgTable('course', {
 	id: text('id').primaryKey(),
 	canvasId: text('canvas_id'),
-	discordId: text('discord_id'),
+	discordId: text('discord_server_id'),
+	discordChannelId: text('discord_channel_id')
+
 	// userId: text('user_id')
 	// 	.notNull()
 	// 	.references(() => user.id, { onDelete: 'cascade' }),

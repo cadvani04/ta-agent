@@ -115,6 +115,7 @@ def get_student_enrollments_with_grades(course_id: int) -> List[Dict[str, Any]]:
         }
         
         formatted_enrollments.append(formatted_enrollment)
+        print(formatted_enrollment)
     
     return formatted_enrollments
 
@@ -139,6 +140,7 @@ def get_grade_history_for_course(course_id: int) -> List[Dict[str, Any]]:
     if response.status_code != 200:
         raise Exception(f"Error fetching grade history: {response.status_code} - {response.text}")
     
+    print(response.json())
     return response.json()
 
 @function_tool()
@@ -163,6 +165,7 @@ def get_grade_history_for_assignment(course_id: int, assignment_id: int) -> List
     if response.status_code != 200:
         raise Exception(f"Error fetching assignment grade history: {response.status_code} - {response.text}")
     
+    print(response.json())
     return response.json()
 
 @function_tool()
@@ -188,9 +191,10 @@ def get_grade_history_for_student(course_id: int, assignment_id: int, user_id: i
     if response.status_code != 200:
         raise Exception(f"Error fetching student grade history: {response.status_code} - {response.text}")
     
+    print(response.json())
     return response.json()
 
-#@function_tool()
+@function_tool()
 def get_grade_history_details(course_id: int, assignment_id: int, user_id: int, version_id: int) -> Dict[str, Any]:
     """
     Get the details of a specific grade change event.
@@ -214,6 +218,7 @@ def get_grade_history_details(course_id: int, assignment_id: int, user_id: int, 
     if response.status_code != 200:
         raise Exception(f"Error fetching grade history details: {response.status_code} - {response.text}")
     
+    print(response.json())
     return response.json()
 
 '''

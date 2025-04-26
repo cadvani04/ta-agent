@@ -5,7 +5,18 @@ import httpx
 from dotenv import load_dotenv
 from agents import Agent, Runner, function_tool
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
+
+# Import Canvas Groups functions
+sys.path.append(os.path.join(os.path.dirname(__file__), 'canvas'))
+from canvas_groups import (
+    list_groups_in_context,
+    get_group,
+    create_group,
+    list_group_users,
+    add_user_to_group,
+    get_group_activity_stream
+)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -13,6 +24,14 @@ load_dotenv()
 # Get Discord token from environment variables
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 
+# Get Canvas token from environment variables
+CANVAS_API_TOKEN = os.getenv('canvas_token')
+
+# Get Canvas API URL from environment variables
+CANVAS_API_URL = os.getenv('CANVAS_API_URL', 'https://canvas.instructure.com/api/v1')
+
+# Default course ID for testing
+DEFAULT_COURSE_ID = 11883051  # Replace with your actual course ID
 
 # Models for Discord API
 class CreateServerRequest(BaseModel):
