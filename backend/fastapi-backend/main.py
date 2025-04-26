@@ -1,9 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import os
+import httpx
+import asyncio
 from canvasapi import Canvas
 from agents import Agent, Runner, function_tool
 from pydantic import BaseModel
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 
 app = FastAPI()
 
@@ -83,6 +85,8 @@ class CourseCreate(BaseModel):
     # Posting policy
     post_manually: Optional[bool] = None
 
+
+
 def get_canvas():
     """
     Helper function to create and return a Canvas API client instance.
@@ -146,6 +150,9 @@ def get_course(course_id: int):
     c = get_canvas().get_course(course_id)
     return {"id": c.id, "name": c.name, "start_at": c.start_at, "end_at": c.end_at}
 
+
+
+# Keep your existing Canvas agent endpoint
 @app.get("/agent")
 async def run(query: str):
     agent = Agent(
