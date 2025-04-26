@@ -1,8 +1,7 @@
 # lefthook.yml
 
 pre-commit:
-    commands:
-        lint:
-            run: npm run format -- {staged_files}
-            stage_fixed: true
-
+  commands:
+    lint:
+      run: npm run format -- {staged_files}
+      stage_fixed: true
