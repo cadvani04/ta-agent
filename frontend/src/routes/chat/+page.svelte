@@ -6,6 +6,9 @@
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 	import { Loader, Send } from 'lucide-svelte'
 
+	let { data } = $props()
+	$inspect('data...', data)
+
 	interface Message {
 		id: number
 		content: string
@@ -34,20 +37,27 @@
 
 	$inspect(selectedClass, 'selectedClass')
 
-	const triggerContent = $derived(classes.find((cls) => cls === selectedClass) ?? 'Select a class')
+	const triggerContent = $derived(
+		classes.find((cls) => cls === selectedClass) ?? 'Select a class'
+	)
 
 	function sendMessage() {
 		isLoading = true
 
 		if (newMessage.trim()) {
-			messages = [...messages, { id: Date.now(), content: newMessage, sender: 'user' }]
+			messages = [...messages, {
+				id: Date.now(),
+				content: newMessage,
+				sender: 'user'
+			}]
 			newMessage = ''
 			// simulate bot response
 			setTimeout(() => {
-				messages = [
-					...messages,
-					{ id: Date.now() + 1, content: 'This is a response from the bot', sender: 'bot' }
-				]
+				messages = [...messages, {
+					id: Date.now() + 1,
+					content: 'This is a response from the bot',
+					sender: 'bot'
+				}]
 				isLoading = false
 			}, 1000)
 		}
@@ -62,18 +72,24 @@
 </script>
 
 {#if selectedClass}
-	<Card class="mx-auto mt-8 flex h-[600px] w-full max-w-md flex-col md:max-w-2xl">
+	<Card
+		class="mx-auto my-5 flex h-[600px] w-full max-w-md flex-col md:max-w-2xl"
+	>
 		<CardHeader>
 			<CardTitle>{selectedClass}</CardTitle>
 		</CardHeader>
 		<CardContent class="flex-1 overflow-hidden">
 			<ScrollArea class="h-full p-2">
 				{#each messages as msg (msg.id)}
-					<div class="mb-2 flex {msg.sender === 'user' ? 'justify-end' : 'justify-start'}">
+					<div
+						class="mb-2 flex {msg.sender === 'user' ? 'justify-end' : 'justify-start'}"
+					>
 						<span
-							class="max-w-xs break-words rounded-lg px-3 py-2 {msg.sender === 'user'
+							class="
+								max-w-xs break-words rounded-lg px-3 py-2 {msg.sender === 'user'
 								? 'bg-primary text-primary-foreground'
-								: 'bg-secondary text-secondary-foreground'}"
+								: 'bg-secondary text-secondary-foreground'}
+							"
 						>
 							{msg.content}
 						</span>
@@ -100,7 +116,9 @@
 		</CardFooter>
 	</Card>
 {:else}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 pb-36">
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 pb-36"
+	>
 		<Select
 			type="single"
 			value={selectedClass}

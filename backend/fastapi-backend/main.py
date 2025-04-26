@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import httpx
 import asyncio
@@ -8,6 +9,20 @@ from pydantic import BaseModel
 from typing import Optional, Literal, List
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    # allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/basic")
+async def run():
+    print("Hi there from fastapi!")
+    return { "msg": "Hi" }
 
 class CourseCreate(BaseModel):
     """

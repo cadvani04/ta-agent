@@ -1,8 +1,9 @@
 import { auth } from '@/server/auth'
 import { error, redirect } from '@sveltejs/kit'
 import { svelteKitHandler } from 'better-auth/svelte-kit'
+import type { Handle, HandleFetch } from '@sveltejs/kit';
 
-export async function handle({ event, resolve }) {
+export const handle: Handle = async ({ event, resolve }) => {
 	// CSRF protection
 	if (event.request.method !== 'GET') {
 		const origin = event.request.headers.get('Origin')
@@ -22,8 +23,20 @@ export async function handle({ event, resolve }) {
 		})
 
 		console.log('Session:', session)
-		if (!session) throw redirect(401, '/')
+		if (!session) throw redirect(302, '/')
 	}
 
 	return svelteKitHandler({ event, resolve, auth })
 }
+
+export const handleFetch: HandleFetch = async ({ request, fetch }) => {
+	if (request.url.startsWith('http://localhost:5173/api')) {
+		// clone the original request, but change the URL
+		request = new Request(
+			request.url.replace('http://localhost:5173/api', 'http://localhost:8000'),
+			request
+		);
+	}
+
+	return fetch(request);
+};
