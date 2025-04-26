@@ -1,12 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
-import httpx
-import asyncio
+import sys
 from canvasapi import Canvas
 from agents import Agent, Runner, function_tool
 from pydantic import BaseModel
-from typing import Optional, Literal, List
+from typing import Optional, Literal
+
+from discord_1 import agent as discord_read_agent
+from discord_read import agent as discord_uagent
+
+# discord read, discord testing (agent)
 
 app = FastAPI()
 
@@ -19,10 +23,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def startup_event():
+    discord_read_agent.run()
+    print("Starting up FastAPI server...")
+
 @app.get("/basic")
 async def run():
     print("Hi there from fastapi!")
     return { "msg": "Hi" }
+
 
 class CourseCreate(BaseModel):
     """
@@ -99,7 +109,6 @@ class CourseCreate(BaseModel):
 
     # Posting policy
     post_manually: Optional[bool] = None
-
 
 
 def get_canvas():
@@ -184,6 +193,8 @@ class AgentReq(BaseModel):
     prompt: str
 
 # add context to agent
+### ideally reset per request
+
 
 # Keep your existing Canvas agent endpoint
 @app.post("/agent")
@@ -191,4 +202,11 @@ async def test_run(req: AgentReq):
     result = await Runner.run(agent, req.prompt)
     print(result.final_output)
     return result.final_output
+
+
+@app.post("/read_discord")
+async def d1(req: AgentReq):
+    result = await Runner.run(discord_read_agent, req.prompt)
+    return result.final_output
+
 
