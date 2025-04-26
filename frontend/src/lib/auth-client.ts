@@ -1,6 +1,10 @@
-import { authClient } from './client'
+import { createAuthClient } from 'better-auth/svelte'
 
-export const signIn = async () => {
+const authClient = createAuthClient({
+	baseURL: import.meta.env.BETTER_AUTH_URL
+})
+
+export const logIn = async () => {
 	await authClient.signIn.social({
 		provider: 'google',
 		callbackURL: '/dashboard'
@@ -10,7 +14,7 @@ export const signIn = async () => {
 	})
 }
 
-export const signOut = async () => {
+export const logOut = async () => {
 	await authClient.signOut({
 		fetchOptions: {
 			onSuccess: () => {
@@ -19,3 +23,5 @@ export const signOut = async () => {
 		}
 	})
 }
+
+export type Session = typeof authClient.$Infer.Session
