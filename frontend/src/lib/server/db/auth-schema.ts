@@ -52,6 +52,7 @@ export const course = pgTable('course', {
 	courseName: text('course_name').notNull(),
 	discordId: text('discord_id'), // discord server id
 	discordChannelId: text('discord_channel_id'),
+	slackName: text('slack_name'),
 	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' })
 })
 
@@ -69,7 +70,7 @@ export const msg = pgTable('msg', {
 	content: text('content').notNull(),
 	role: roles('role').notNull(),
 	convoId: text('convo_id').notNull().references(() => convo.id, { onDelete: 'cascade' }),
-	createdAt: timestamp('created_at')
+	createdAt: timestamp('created_at').defaultNow()
 })
 
 export type InsertUser = InferInsertModel<typeof user>
