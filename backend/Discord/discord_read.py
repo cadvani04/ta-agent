@@ -203,5 +203,3 @@ async def handle_list_channels(ctx: Context, req: ListChannelsRequest) -> ListCh
             timestamp=int(time.time())
         )
 
-if __name__ == "__main__":
-    agent.run()
