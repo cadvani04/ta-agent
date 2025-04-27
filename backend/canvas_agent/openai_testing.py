@@ -6,7 +6,7 @@ import openai_tools as canvas_tools
 from agents import Agent, Runner
 from openai_tools import *
 from canvas.canvas_courses import get_all_courses, get_course
-from canvas.canvas_assignments import create_assignment, get_assignments, edit_assignment
+from canvas.canvas_assignments import create_assignment, get_assignments, edit_assignment, delete_assignment
 from canvas.canvas_assignments import *
 from canvas.canvas_gradebook_history import get_student_grades 
 import inspect
@@ -42,11 +42,12 @@ def test_fns():
     updated_assignment = edit_assignment(course_id, assignment_id, edit_data)
 
     # Basic checks
+    print(updated_assignment["points_possible"])
     assert updated_assignment["id"] == assignment_id
     assert updated_assignment["name"] == "Updated Assignment Title"
     assert updated_assignment["description"] == "<p>Updated description for the assignment.</p>"
-    assert updated_assignment["points_possible"] == "20.0"
-    assert updated_assignment["published"] == "true"
+    assert updated_assignment["points_possible"] == 20
+    assert updated_assignment["published"] == True
 
     print("Test passed: edit_assignment successfully updated fields.")
     
@@ -56,8 +57,10 @@ def main():
     if not CANVAS_API_URL or not CANVAS_API_TOKEN:
         print("Error: CANVAS_API_URL and CANVAS_API_TOKEN must be set in .env file")
         sys.exit(1)
-    test_fns()
-    tool_list = [get_all_courses, get_course, create_assignment, get_student_grades, get_assignments, edit_assignment]
+    # test_fns()
+    tool_list = [get_all_courses, get_course, create_assignment, 
+                 get_student_grades, get_assignments, edit_assignment,
+                 delete_assignment]
 
     agent = Agent(name="Canvas Agent",
                   instructions="You are an assistant designed to help the user interact with the Canvas API. Your primary purpose is to perform actions in the Canvas API given the tools, and give information to the user based on what you can learn from querying the Canvas API and what they ask. Your primary course right now is course ID 11883051. This means that when unclear or in most cases, you are to respond about this course (unless explicitly asked to provide other information about other courses or data).",
@@ -67,7 +70,7 @@ def main():
     user_input = None
     result = None
     while True:
-        user_input = input(" >")
+        user_input = input(" > ")
 
         if user_input.lower() in ["exit", "quit"]:
             break

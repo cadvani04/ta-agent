@@ -1,13 +1,3 @@
-"""
-Discord OpenAI Agent
-
-This module provides functions to interact with the Discord API using OpenAI agents.
-It includes functionality to:
-- Read messages from Discord channels
-- List channels in a Discord server
-- Create Discord servers
-"""
-
 import os
 import discord
 import requests
@@ -18,7 +8,7 @@ from agents import function_tool
 
 # Load environment variables
 load_dotenv()
-DISCORD_TOKEN = os.getenv('discord_token')
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 if not DISCORD_TOKEN:
     raise ValueError("discord_token environment variable is not set")
 

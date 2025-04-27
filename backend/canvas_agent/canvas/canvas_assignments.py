@@ -23,7 +23,7 @@ Batch update overrides in a course
 
 8 to implement
 """
-from openai_tools import *
+from canvas_agent.openai_tools import *
 
 class AssignmentCreate(BaseModel):
     """
@@ -180,7 +180,7 @@ def get_assignments(course_id: int):
 
     return formatted_assignments
 
-# @function_tool()
+@function_tool()
 def edit_assignment(
     course_id: int,
     assignment_id: int,
@@ -229,12 +229,13 @@ def edit_assignment(
 
     # Build the payload from only the fields provided
     payload: Dict[str, Any] = {}
-    for field_name, value in assignment_data.dict(exclude_unset=True).items():
+    for field_name, value in assignment_data.model_dump(exclude_unset=True).items():
         # Canvas API expects camelCase for some fields; adjust if needed
         payload[field_name] = value
 
     # Send the update request
-    updated_asgn = assignment.edit(**payload)
+    updated_asgn = assignment.edit(assignment=payload)
+
 
     # Return a cleaned-up dict of the updated assignment
     return {
@@ -250,7 +251,43 @@ def edit_assignment(
     }
 
     
+@function_tool()    
+def delete_assignment(course_id: int, assignment_id: int) -> Dict[str, Any]:
+    """
+    Delete an assignment from a specific Canvas course.
+
+    This function permanently deletes an assignment from a course by calling the Canvas API.
+    It fetches the assignment, sends a delete request, and returns confirmation 
+    information about the deleted assignment.
+
+    Args:
+        course_id (int): The Canvas course ID containing the assignment.
+        assignment_id (int): The ID of the assignment to delete.
+
+    Returns:
+        Dict[str, Any]: A dictionary containing basic information about the deleted assignment:
+            - 'id' (int): The ID of the deleted assignment
+            - 'name' (str): The name of the deleted assignment
+            - 'deleted' (bool): True if deletion was successful
+
+    Raises:
+        Exception: If the API request fails or the assignment cannot be deleted.
     
-def delete_assignment(assignment_id):
-    pass
+    Notes:
+        - This action is permanent unless Canvas is configured to allow recovery.
+        - Unpublished and published assignments can both be deleted.
+    """
+    canvas = get_canvas()
+    course = canvas.get_course(course_id)
+    assignment = course.get_assignment(assignment_id)
+
+    deleted_assignment = assignment.delete()
+
+    # After deletion, Canvas usually returns the object with updated workflow_state
+    return {
+        "id": deleted_assignment.id,
+        "name": deleted_assignment.name,
+        "deleted": True
+    }
+
     

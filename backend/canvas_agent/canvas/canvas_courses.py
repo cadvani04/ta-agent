@@ -1,5 +1,5 @@
 # https://canvas.instructure.com/doc/api/courses.html#method.courses.create_file
-from openai_tools import *
+from canvas_agent.openai_tools import *
 # —————————————————————————————
 # Account endpoints
 # —————————————————————————————
