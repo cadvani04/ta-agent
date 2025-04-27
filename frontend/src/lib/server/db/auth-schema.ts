@@ -56,21 +56,15 @@ export const course = pgTable('course', {
 	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' })
 })
 
-export const convo = pgTable('convo', {
-	id: uuid('id').primaryKey().defaultRandom(),
-	courseId: text('course_id').notNull().references(() => course.canvasId, { onDelete: 'cascade' }),
-	createdAt: timestamp('created_at').notNull(),
-	updatedAt: timestamp('updated_at').notNull()
-})
-
 export const roles = pgEnum('roles', ['user', 'agent'])
 
 export const msg = pgTable('msg', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	content: text('content').notNull(),
 	role: roles('role').notNull(),
-	convoId: text('convo_id').notNull().references(() => convo.id, { onDelete: 'cascade' }),
-	createdAt: timestamp('created_at').defaultNow()
+	convoId: text('convo_id').notNull(),
+	createdAt: timestamp('created_at').defaultNow(),
+	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' })
 })
 
 export type InsertUser = InferInsertModel<typeof user>

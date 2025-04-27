@@ -56,7 +56,7 @@ export const load: PageServerLoad = async ({ request, fetch, locals }) => {
 }
 
 export const actions = {
-	query: async ({ request, fetch }) => {
+	query: async ({ request, fetch, locals }) => {
 		const form = await request.formData()
 
 		const message = form.get('message')?.toString().trim()
@@ -90,10 +90,11 @@ export const actions = {
 		console.log('results ::: ', data)
 
 		// save to db
-		await db.insert(table.msg).values({
+		const test = await db.insert(table.msg).values({
 			role: 'user',
 			content: data,
-			convoId
+			convoId,
+			userId: locals.user?.id
 		})
 
 		return {

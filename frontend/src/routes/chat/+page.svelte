@@ -85,7 +85,8 @@
 
 					convo.addMsg({
 						content: newMessage,
-						role: 'user'
+						role: 'user',
+						userId: selectedCourse?.userId ?? ''
 					})
 
 					// newMessage = convo.flattenMsgs() + newMessage
@@ -96,7 +97,8 @@
 						if (form) {
 							convo.addMsg({
 								content: form.response,
-								role: 'agent'
+								role: 'agent',
+								userId: ''
 							})
 							newMessage = ''
 						}
