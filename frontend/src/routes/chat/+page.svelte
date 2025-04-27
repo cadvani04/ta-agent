@@ -150,7 +150,7 @@
 						)}
 					/>
 				{/if}
-				<input type="hidden" name="convoId" />
+				<input type="hidden" name="convoId" value={convo.convoId()} />
 			</form>
 		</CardFooter>
 	</Card>
