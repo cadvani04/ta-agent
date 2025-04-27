@@ -33,9 +33,18 @@ export const load: PageServerLoad = async ({ request, fetch, locals }) => {
 	const msgHistory = await db.select().from(table.msg).where(eq(table.msg.userId, locals.user.id)).orderBy(
 		desc(table.msg.createdAt)
 	).limit(10)
-	console.log('msgHistory', msgHistory)
 
-	return { courses }
+	const conversations = msgHistory.reduce((acc: Record<string, any[]>, curr) => {
+		if (!acc[curr.convoId]) {
+			acc[curr.convoId] = []
+		}
+		acc[curr.convoId].push(curr.content)
+		return acc
+	}, {})
+
+	console.log('msgHistory', msgHistory, 'conversations', conversations)
+
+	return { courses, msgHistory, conversations }
 }
 
 export const actions = {
@@ -43,6 +52,7 @@ export const actions = {
 		const form = await request.formData()
 		const message = form.get('message')?.toString().trim()
 		const prompt = form.get('prompt')?.toString().trim()
+		const context = form.get('context')?.toString().trim()
 		const convoId = form.get('convoId')?.toString().trim()
 
 		const session = await auth.api.getSession({
@@ -54,22 +64,31 @@ export const actions = {
 			locals.session = session?.session
 		}
 
+		console.log('to query to agent', prompt + (context ?? '') + message)
+
 		const res = await fetch('/api/agent', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				prompt
+				prompt: prompt + (context ?? '') + message
 			})
 		})
+		await db.insert(table.msg).values({
+			role: 'user',
+			content: message ?? '',
+			convoId: convoId ?? '',
+			userId: locals.user?.id
+		})
+
 		const data = await res.json()
 
 		console.log('results ::: ', data)
 
 		// save to db
 		await db.insert(table.msg).values({
-			role: 'user',
+			role: 'agent',
 			content: data,
 			convoId: convoId ?? '',
 			userId: locals.user?.id
