@@ -31,6 +31,10 @@ async def run():
     canvas = get_canvas()
     return [{"id": c.id, "name": c.name, "account_id": c.account_id, "root_account_id": c.root_account_id} for c in canvas.get_courses()]
 
+@app.get("/list_courses")
+def get_all_courses():
+    canvas = get_canvas()
+    return [{"id": c.id, "name": c.name, "account_id": c.account_id, "root_account_id": c.root_account_id} for c in canvas.get_courses()]
 
 class CourseCreate(BaseModel):
     """
@@ -186,25 +190,4 @@ agent = Agent(
 )
 
 print("agent init")
-
-class AgentReq(BaseModel):
-    prompt: str
-
-# add context to agent
-### ideally reset per request
-
-
-# Keep your existing Canvas agent endpoint
-@app.post("/agent")
-async def test_run(req: AgentReq):
-    result = await Runner.run(agent, req.prompt)
-    print(result.final_output)
-    return result.final_output
-
-
-@app.post("/read_discord")
-async def d1(req: AgentReq):
-    result = await Runner.run(discord_read_agent, req.prompt)
-    return result.final_output
-
 

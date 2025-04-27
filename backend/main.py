@@ -12,12 +12,37 @@ from canvas_agent.canvas.canvas_assignments import *
 from canvas_agent.canvas.canvas_gradebook_history import get_student_grades 
 import inspect
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 # Load environment variables from .env file
 load_dotenv()
 
 # Get Canvas API URL and token from environment variables
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 CANVAS_API_TOKEN = os.getenv('CANVAS_API_TOKEN')
+
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    # allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/list_courses")
+def get_all_courses():
+    canvas = get_canvas()
+    return [{"id": c.id, "name": c.name, "account_id": c.account_id, "root_account_id": c.root_account_id} for c in canvas.get_courses()]
+
+class AgentReq(BaseModel):
+    prompt: str
+
+
 
 def main():
     if not CANVAS_API_URL or not CANVAS_API_TOKEN:
