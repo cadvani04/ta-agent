@@ -7,8 +7,11 @@ from agents import Agent, Runner, function_tool
 from pydantic import BaseModel
 from typing import Optional, Literal
 
-from discord_1 import agent as discord_read_agent
-from discord_read import agent as discord_uagent
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # discord read, discord testing (agent)
 
@@ -22,11 +25,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-async def startup_event():
-    discord_read_agent.run()
-    print("Starting up FastAPI server...")
 
 @app.get("/basic")
 async def run():
