@@ -3,21 +3,21 @@
 	import { Button } from '@/components/ui/button'
 	import type { Snippet } from 'svelte'
 	import { logIn, logOut } from '@/auth-client'
-	import { SquarePen, History } from 'lucide-svelte';
+	import { History, SquarePen } from 'lucide-svelte'
 
-	const {
-		children,
-		data
-	}: { data: { user: import('better-auth').User | null }; children: Snippet } = $props()
+	const { children, data }: {
+		data: { user: import('better-auth').User | null }
+		children: Snippet
+	} = $props()
 </script>
 
 <nav class="flex items-center justify-between p-4">
 	<ul class="flex space-x-2">
 		<li>
-			<Button variant="outline" href="/"><History /></Button>
+			<Button variant="outline" href="/chat"><History /></Button>
 		</li>
 		<li>
-			<Button variant="outline" href="/chat"><SquarePen/></Button>
+			<Button variant="outline" href="/chat"><SquarePen /></Button>
 		</li>
 	</ul>
 

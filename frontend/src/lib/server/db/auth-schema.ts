@@ -63,6 +63,7 @@ export const msg = pgTable('msg', {
 	content: text('content').notNull(),
 	role: roles('role').notNull(),
 	convoId: text('convo_id').notNull(),
+	courseId: text('course_id').notNull().references(() => course.canvasId, { onDelete: 'cascade' }),
 	createdAt: timestamp('created_at').defaultNow(),
 	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' })
 })
