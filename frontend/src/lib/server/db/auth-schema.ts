@@ -71,5 +71,5 @@ export const msg = pgTable('msg', {
 	courseId: text('course_id')
 		.notNull()
 		.references(() => course.id, { onDelete: 'cascade' }),
-	createdAt: timestamp('created_at'),
+	createdAt: timestamp('created_at')
 })

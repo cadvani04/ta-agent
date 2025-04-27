@@ -1,7 +1,7 @@
 import { auth } from '@/server/auth'
 import { error, redirect } from '@sveltejs/kit'
 import { svelteKitHandler } from 'better-auth/svelte-kit'
-import type { Handle, HandleFetch } from '@sveltejs/kit';
+import type { Handle, HandleFetch } from '@sveltejs/kit'
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// CSRF protection
@@ -9,8 +9,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const origin = event.request.headers.get('Origin')
 
 		if (
-			!origin
-			|| origin !== (process.env.NODE_ENV == 'development' ? 'http://localhost:5173' : 'https://att.vercel.app')
+			!origin ||
+			origin !==
+				(process.env.NODE_ENV == 'development' ? 'http://localhost:5173' : 'https://att.vercel.app')
 		) {
 			throw error(403, 'Forbidden: Invalid origin')
 		}
@@ -35,8 +36,8 @@ export const handleFetch: HandleFetch = async ({ request, fetch }) => {
 		request = new Request(
 			request.url.replace('http://localhost:5173/api', 'http://localhost:8000'),
 			request
-		);
+		)
 	}
 
-	return fetch(request);
-};
+	return fetch(request)
+}

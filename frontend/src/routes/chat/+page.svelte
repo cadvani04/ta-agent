@@ -7,9 +7,9 @@
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 	import { Loader, Send } from 'lucide-svelte'
 	import Markdown from 'svelte-exmarkdown'
-	import { gfmPlugin } from 'svelte-exmarkdown/gfm';
+	import { gfmPlugin } from 'svelte-exmarkdown/gfm'
 
-	const plugins = [gfmPlugin()];
+	const plugins = [gfmPlugin()]
 
 	let { data, form } = $props()
 	// $inspect('data...', data)
@@ -38,8 +38,7 @@
 	let isLoading = $state(false)
 
 	let bottomDiv = $state<HTMLDivElement | null>(null)
-	let formEl = $state<HTMLFormElement  | null>(null)
-	let inputEl
+	let formEl = $state<HTMLFormElement | null>(null)
 
 	// $inspect(selectedClass, 'selectedClass')
 
@@ -47,7 +46,7 @@
 
 	$effect(() => {
 		if (messages.length > 0) {
-			bottomDiv.scrollIntoView({ behavior: 'smooth' })
+			bottomDiv?.scrollIntoView({ behavior: 'smooth' })
 		}
 	})
 </script>
@@ -104,7 +103,7 @@
 							newMessage = ''
 						}
 						isLoading = false
-						document.getElementById("chat-input").focus();
+						document.getElementById('chat-input')?.focus()
 					}
 				}}
 				method="post"
@@ -119,14 +118,13 @@
 						// only plain Enter, not Shift+Enter, and only when not already loading
 						if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
 							e.preventDefault()
-							formEl.requestSubmit()
+							formEl?.requestSubmit()
 						}
 					}}
 					name="message"
 					class="flex-1"
 					autocomplete="off"
 					disabled={isLoading}
-					bind:this={inputEl}
 					id="chat-input"
 				/>
 
