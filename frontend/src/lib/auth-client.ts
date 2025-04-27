@@ -18,7 +18,8 @@ export const logOut = async () => {
 	await authClient.signOut({
 		fetchOptions: {
 			onSuccess: () => {
-				window.location.reload()
+				window.location.href = '/'
+				// window.location.reload()
 			}
 		}
 	})

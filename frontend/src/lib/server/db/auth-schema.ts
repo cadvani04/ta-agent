@@ -1,4 +1,5 @@
-import { boolean, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { type InferInsertModel, type InferSelectModel, relations } from 'drizzle-orm'
+import { boolean, integer, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -18,18 +19,14 @@ export const session = pgTable('session', {
 	updatedAt: timestamp('updated_at').notNull(),
 	ipAddress: text('ip_address'),
 	userAgent: text('user_agent'),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' })
+	userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' })
 })
 
 export const account = pgTable('account', {
 	id: text('id').primaryKey(),
 	accountId: text('account_id').notNull(),
 	providerId: text('provider_id').notNull(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
+	userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
 	accessToken: text('access_token'),
 	refreshToken: text('refresh_token'),
 	idToken: text('id_token'),
@@ -51,25 +48,41 @@ export const verification = pgTable('verification', {
 })
 
 export const course = pgTable('course', {
-	id: text('id').primaryKey(),
-	canvasId: text('canvas_id'),
-	discordId: text('discord_server_id'),
-	discordChannelId: text('discord_channel_id')
-
-	// userId: text('user_id')
-	// 	.notNull()
-	// 	.references(() => user.id, { onDelete: 'cascade' }),
+	canvasId: text('canvas_id').primaryKey().notNull(),
+	courseName: text('course_name').notNull(),
+	discordId: text('discord_id'), // discord server id
+	discordChannelId: text('discord_channel_id'),
+	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' })
 })
+
+export const convo = pgTable('convo', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	courseId: text('course_id').notNull().references(() => course.canvasId, { onDelete: 'cascade' }),
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at').notNull()
+})
+
+export const roles = pgEnum('roles', ['user', 'agent'])
 
 export const msg = pgTable('msg', {
-	id: text('id').primaryKey(),
-	isUser: boolean('is_user'), // user or bot
-	body: text('body'),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	courseId: text('course_id')
-		.notNull()
-		.references(() => course.id, { onDelete: 'cascade' }),
+	id: uuid('id').primaryKey().defaultRandom(),
+	content: text('content').notNull(),
+	role: roles('role').notNull(),
+	convoId: text('convo_id').notNull().references(() => convo.id, { onDelete: 'cascade' }),
 	createdAt: timestamp('created_at')
 })
+
+export type InsertUser = InferInsertModel<typeof user>
+export type SelectUser = InferSelectModel<typeof user>
+
+export type InsertSession = InferInsertModel<typeof session>
+export type SelectSession = InferSelectModel<typeof session>
+
+export type InsertCourse = InferInsertModel<typeof course>
+export type SelectCourse = InferSelectModel<typeof course>
+
+export type InsertMsg = InferInsertModel<typeof msg>
+export type SelectMsg = InferSelectModel<typeof msg>
+
+/// functionalities
+// have many convos, each keeping track of previous conversations and their messages, passing in the last 5 messages to the next AI prompt for context
