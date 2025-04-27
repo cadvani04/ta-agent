@@ -26,6 +26,97 @@ load_dotenv()
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 CANVAS_API_TOKEN = os.getenv('CANVAS_API_TOKEN')
 
+# Create FastAPI app
+app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Store active chat sessions
+chat_sessions = {}
+
+
+@app.post("/chat/create")
+async def create_chat():
+    canvas_tools = [get_all_courses, get_course, create_assignment,
+                    get_student_grades, get_assignments, edit_assignment,
+                    delete_assignment, get_submissions, create_quiz,
+                    list_quizzes, get_quiz, edit_quiz,
+                    delete_quiz, reorder_quiz_items, validate_quiz_access_code,
+                    list_quiz_submissions, get_quiz_submission, start_quiz_submission,
+                    update_quiz_submission, complete_quiz_submission, quiz_submission_time,
+                    list_quiz_questions, get_quiz_question, create_quiz_question,
+                    update_quiz_question, delete_quiz_question]
+    discord_tools = [
+        list_discord_channels,
+        read_discord_messages,
+        create_discord_server
+    ]
+    slack_tools = [
+        list_slack_channels,
+        read_slack_messages,
+        monitor_slack_channel,
+        send_slack_message
+    ]
+    ai_check_tools = [check_ai]
+    all_tools = canvas_tools + discord_tools + ai_check_tools + slack_tools
+
+    # Create a new master agent
+    master_agent = Agent(name="Master",
+                         instructions=make_instructions(
+                             11883051, 1365757418998464593, 1365757421938544721, "cse"),
+                         model="o4-mini",
+                         tools=all_tools)
+
+    # Generate a unique chat ID
+    chat_id = str(uuid.uuid4())
+
+    # Store the chat session
+    chat_sessions[chat_id] = {
+        "agent": master_agent,
+        "result": None
+    }
+
+    return {"chat_id": chat_id}
+
+
+@app.post("/chat/{chat_id}/message")
+async def send_message(chat_id: str, message: dict):
+    if chat_id not in chat_sessions:
+        raise HTTPException(status_code=404, detail="Chat session not found")
+
+    chat_session = chat_sessions[chat_id]
+    master_agent = chat_session["agent"]
+    previous_result = chat_session["result"]
+
+    # Prepare the user input
+    user_input = message["content"]
+    if previous_result is not None:
+        user_input = previous_result.to_input_list(
+        ) + [{"role": "user", "content": user_input}]
+
+    # Run the agent
+    result = Runner.run_sync(master_agent, user_input)
+
+    # Store the result
+    chat_sessions[chat_id]["result"] = result
+
+    # Return the response
+    return {"response": result.final_output}
+
+
+@app.delete("/chat/{chat_id}")
+async def delete_chat(chat_id: str):
+    if chat_id in chat_sessions:
+        del chat_sessions[chat_id]
+    return {"status": "success"}
+
 
 def make_instructions(course_id: int, discord_server_id: int, discord_channel_id: int, slack_name: str):
     return f"You are an assistant designed to help and assist the user, primarily to help interface and collect insights from different services and APIs. To this end, you have been given some tools pertaining to the Canvas LMS, Discord, and Slack. The Canvas tools allow you to do a multitude of operations that you can do in the actual canvas, and you may interact with the Canvas API given the tools. Based on what you learn from querying the Canvas API, you will give the user information or complete their request in the best fashion that you can. The same goes for the Discord and Slack tools, which will mainly be used to retrieve messages, analyze, and report back to the user in addition to their other capabilities. Your primary course right now is course ID {course_id}. This  means that when unclear or in most cases, you are to respond about this course (unless explicitly asked to provide other information about other courses or data). Based on the user’s query, you may use any combination of the provided tools in any order to complete the task to the maximum possible level. The Discord server ID is {discord_server_id}, and the Discord channel ID is {discord_channel_id}. The Slack is called {slack_name}. You also have a small AI check tool to be used only when specifically asked for."
@@ -96,4 +187,6 @@ def main():
 
 
 if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
     main()
