@@ -4,65 +4,55 @@ import type { PageServerLoad } from './$types'
 import { superValidate } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import * as table from '@/server/db/auth-schema'
-import { ConsoleLogWriter, eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
+import { auth } from '@/server/auth'
 
 export const load: PageServerLoad = async ({ request, fetch, locals }) => {
-	// on server connect, fetch for new list of courses
+	// on server connect, fetch for course list, check for updates
+	const courses = await db.select().from(table.course)
 
-	const res = await fetch('/api/list_courses')
+	const session = await auth.api.getSession({
+		headers: request.headers
+	})
 
-	if (!res.ok) {
-		throw new Error(`Fetch failed: ${res.status}`)
+	if (session) {
+		locals.user = session?.user
+		locals.session = session?.session
 	}
 
-	const courseList = await res.json()
-
-	for (const course of courseList) {
-		console.log('course', course)
-		// check if course already exists in db
-		const existing = await db.select().from(table.course).where(eq(table.course.canvasId, course.id))
-
-		if (existing.length === 0) {
-			console.log('coursesss', existing, course.id)
-			// insert new course into db
-			if (locals.user) {
-				console.log('user', locals.user)
-			} else {
-				console.log('no user')
-			}
-
-			await db.insert(table.course).values({
-				canvasId: course.id,
-				courseName: course.name,
-				userId: locals.user?.id
-				// optional, for later
-				// discordId: course.discord_id,
-				// discordChannelId: course.discord_channel_id
-			})
+	if (!locals.user) {
+		return {
+			courses: []
 		}
-
-		// 	  {
-		//     id: 11883051,
-		//     name: 'CSE 30 Programming in Python',
-		//     account_id: 81259,
-		//     root_account_id: 10,
-		//     ...,
-		//   }
 	}
 
-	return { courses: courseList }
+	// look and fetch history of messages
+	// const past_msgs = await db.select().from(table.msg).where(eq(table.msg.userId, locals.user?.id)).orderBy(
+	// 	table.msg.createdAt.desc()
+	// )
+	const msgHistory = await db.select().from(table.msg).where(eq(table.msg.userId, locals.user.id)).orderBy(
+		desc(table.msg.createdAt)
+	).limit(10)
+	console.log('msgHistory', msgHistory)
+
+	return { courses }
 }
 
 export const actions = {
-	query: async ({ request, fetch }) => {
+	query: async ({ request, fetch, locals }) => {
 		const form = await request.formData()
 		const message = form.get('message')?.toString().trim()
+		const prompt = form.get('prompt')?.toString().trim()
+		const convoId = form.get('convoId')?.toString().trim()
 
-		if (!message) {
-			return { success: false, error: 'Query cannot be empty' }
+		const session = await auth.api.getSession({
+			headers: request.headers
+		})
+
+		if (session) {
+			locals.user = session?.user
+			locals.session = session?.session
 		}
-
-		console.log('message', message)
 
 		const res = await fetch('/api/agent', {
 			method: 'POST',
@@ -70,12 +60,20 @@ export const actions = {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				prompt: message
+				prompt
 			})
 		})
 		const data = await res.json()
 
-		console.log('results:::', data)
+		console.log('results ::: ', data)
+
+		// save to db
+		await db.insert(table.msg).values({
+			role: 'user',
+			content: data,
+			convoId: convoId ?? '',
+			userId: locals.user?.id
+		})
 
 		return {
 			success: true,
