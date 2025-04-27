@@ -19,33 +19,36 @@ if not SLACK_TOKEN_CSE:
     print("Warning: SLACK_BOT_CSE environment variable is not set")
 
 # Define core functions that will be used for both direct calls and as function tools
+
+
 @function_tool()
 def list_slack_channels(course: str) -> List[Dict[str, Any]]:
     """
     List all channels in a Slack workspace.
-    
+
     Args:
         course (str): Which course to use ("math" or "cse")
-        
+
     Returns:
         List[Dict[str, Any]]: A list of channel objects with id, name, and is_private
     """
     # Handle default value inside the function
     if not course or course.lower() not in ["math", "cse"]:
         course = "math"
-    
+
     # Determine which token to use
     token = SLACK_TOKEN_MATH if course.lower() == "math" else SLACK_TOKEN_CSE
-    
+
     # Create a Slack client
     client = WebClient(token=token)
-    
+
     print(f"Listing channels in {course} workspace")
-    
+
     # Get the list of channels
-    response = client.conversations_list(types="public_channel,private_channel")
+    response = client.conversations_list(
+        types="public_channel,private_channel")
     channels = response["channels"]
-    
+
     # Format the channels
     formatted_channels = []
     for channel in channels:
@@ -54,39 +57,40 @@ def list_slack_channels(course: str) -> List[Dict[str, Any]]:
             "name": channel["name"],
             "is_private": channel.get("is_private", False)
         })
-    
+
     print(f"Found {len(formatted_channels)} channels in {course} workspace")
     return formatted_channels
+
 
 @function_tool()
 def read_slack_messages(channel_id: str, limit: int, course: str) -> List[Dict[str, Any]]:
     """
     Read messages from a Slack channel.
-    
+
     Args:
         channel_id (str): The ID of the channel to read messages from
         limit (int): Maximum number of messages to retrieve
         course (str): Which course to use ("math" or "cse")
-        
+
     Returns:
         List[Dict[str, Any]]: A list of message objects with text, user, timestamp, and attachments
     """
     # Handle default internally
     if not course or course.lower() not in ["math", "cse"]:
         course = "math"
-    
+
     # Determine which token to use
     token = SLACK_TOKEN_MATH if course.lower() == "math" else SLACK_TOKEN_CSE
-    
+
     # Create a Slack client
     client = WebClient(token=token)
-    
+
     print(f"Reading messages from channel {channel_id} in {course} workspace")
-    
+
     # Get the messages
     response = client.conversations_history(channel=channel_id, limit=limit)
     messages = response["messages"]
-    
+
     # Format the messages
     formatted_messages = []
     for msg in messages:
@@ -97,7 +101,7 @@ def read_slack_messages(channel_id: str, limit: int, course: str) -> List[Dict[s
             username = user_info["user"]["name"]
         except:
             username = f"Unknown User ({user_id})"
-        
+
         formatted_messages.append({
             "id": msg["ts"],
             "content": msg.get("text", ""),
@@ -105,41 +109,42 @@ def read_slack_messages(channel_id: str, limit: int, course: str) -> List[Dict[s
             "timestamp": msg["ts"],
             "attachments": [att.get("url", "") for att in msg.get("attachments", [])]
         })
-    
+
     print(f"Found {len(formatted_messages)} messages in channel {channel_id}")
     return formatted_messages
+
 
 @function_tool()
 def send_slack_message(channel: str, text: str, course: str) -> Dict[str, Any]:
     """
     Send a message to a Slack channel.
-    
+
     Args:
         channel (str): The channel to send the message to (e.g., "#general" or channel ID)
         text (str): The message text
         course (str): Which course to use ("math" or "cse")
-        
+
     Returns:
         Dict[str, Any]: Information about the sent message, including channel and timestamp
     """
     # Handle default internally
     if not course or course.lower() not in ["math", "cse"]:
         course = "math"
-    
+
     # Determine which token to use
     token = SLACK_TOKEN_MATH if course.lower() == "math" else SLACK_TOKEN_CSE
-    
+
     # Create a Slack client
     client = WebClient(token=token)
-    
+
     print(f"Sending message to {channel} in {course} workspace")
-    
+
     # Send the message
     response = client.chat_postMessage(
         channel=channel,
         text=text
     )
-    
+
     # Return the message information
     return {
         "id": response["ts"],
@@ -147,63 +152,66 @@ def send_slack_message(channel: str, text: str, course: str) -> Dict[str, Any]:
         "timestamp": response["ts"]
     }
 
+
 @function_tool()
 def monitor_slack_channel(channel_id: str, duration: int, course: str) -> List[Dict[str, Any]]:
     """
     Monitor a Slack channel for new messages for a specified duration.
-    
+
     Args:
         channel_id (str): The ID of the channel to monitor
         duration (int): How long to monitor the channel (in seconds)
         course (str): Which course to use ("math" or "cse")
-        
+
     Returns:
         List[Dict[str, Any]]: A list of new messages that appeared during monitoring
     """
     # Handle defaults internally
     if not duration or duration <= 0:
         duration = 60
-    
+
     if not course or course.lower() not in ["math", "cse"]:
         course = "math"
-    
+
     # Create a Slack client
-    client = WebClient(token=SLACK_TOKEN_MATH if course.lower() == "math" else SLACK_TOKEN_CSE)
-    
+    client = WebClient(token=SLACK_TOKEN_MATH if course.lower()
+                       == "math" else SLACK_TOKEN_CSE)
+
     # Get the channel info to display the name
     channel_info = client.conversations_info(channel=channel_id)
     channel_name = channel_info["channel"]["name"]
-    
-    print(f"Monitoring channel: {channel_name} (ID: {channel_id}) for {duration} seconds")
-    
+
+    # print(f"Monitoring channel: {channel_name} (ID: {channel_id}) for {duration} seconds")
+
     # Get initial messages to establish a baseline
     response = client.conversations_history(channel=channel_id, limit=1)
     latest_ts = response["messages"][0]["ts"] if response["messages"] else "0"
-    
+
     # Store all new messages
     all_new_messages = []
-    
+
     # Monitor for the specified duration
     end_time = time.time() + duration
     while time.time() < end_time:
         # Wait a bit before checking again
         time.sleep(5)
-        
+
         # Get new messages
-        response = client.conversations_history(channel=channel_id, oldest=latest_ts)
+        response = client.conversations_history(
+            channel=channel_id, oldest=latest_ts)
         messages = response["messages"]
-        
+
         # Skip the first message if it's the same as our latest
         if messages and messages[0]["ts"] == latest_ts:
             messages = messages[1:]
-        
+
         # Process new messages
         if messages:
             print(f"Found {len(messages)} new messages")
-            
+
             # Update latest timestamp
             latest_ts = messages[0]["ts"]
-            
+
             # Format and add the messages
             for msg in reversed(messages):
                 # Get user info
@@ -213,12 +221,12 @@ def monitor_slack_channel(channel_id: str, duration: int, course: str) -> List[D
                     username = user_info["user"]["name"]
                 except:
                     username = f"Unknown User ({user_id})"
-                
+
                 # Convert timestamp to readable format
                 ts = float(msg["ts"])
                 dt = datetime.fromtimestamp(ts)
                 time_str = dt.strftime("%Y-%m-%d %H:%M:%S")
-                
+
                 # Format the message
                 formatted_msg = {
                     "text": msg.get("text", ""),
@@ -226,16 +234,18 @@ def monitor_slack_channel(channel_id: str, duration: int, course: str) -> List[D
                     "timestamp": time_str,
                     "raw_timestamp": msg["ts"],
                     "attachments": [
-                        {"title": att.get("title", "Untitled"), "url": att.get("url", "")} 
+                        {"title": att.get("title", "Untitled"),
+                         "url": att.get("url", "")}
                         for att in msg.get("attachments", [])
                     ]
                 }
-                
+
                 all_new_messages.append(formatted_msg)
-                print(f"[{time_str}] {username}: {msg.get('text', '')}")
-    
-    print(f"Monitoring complete. Found {len(all_new_messages)} new messages.")
+                # print(f"[{time_str}] {username}: {msg.get('text', '')}")
+
+    # print(f"Monitoring complete. Found {len(all_new_messages)} new messages.")
     return all_new_messages
+
 
 # Create the function tools for the agent
 '''
@@ -244,6 +254,8 @@ read_slack_messages = function_tool()(_read_slack_messages)
 send_slack_message = function_tool()(_send_slack_message)
 monitor_slack_channel = function_tool()(_monitor_slack_channel)
 '''
+
+
 def create_slack_agent():
     """Create a Slack agent with OpenAI."""
     return Agent(
@@ -261,6 +273,8 @@ def create_slack_agent():
         ],
         model="gpt-4o-mini",
     )
+
+
 '''
 # Create the Slack agent when the module is imported
 slack_agent = create_slack_agent()
@@ -320,29 +334,33 @@ def manual_test():
     except Exception as e:
         print(f"Error: {e}")
 '''
+
+
 def main():
     """Main function to create and run the Slack agent."""
     slack_agent = create_slack_agent()
-    
+
     # Interactive loop
     user_input = None
     result = None
-    
+
     print("=== Slack Agent ===")
     print("Type 'exit' or 'quit' to end the session")
-    
+
     while True:
         user_input = input(" > ")
-        
+
         if user_input.lower() in ["exit", "quit"]:
             break
-        
+
         if result is not None:
-            user_input = result.to_input_list() + [{"role": "user", "content": user_input}]
-        
+            user_input = result.to_input_list(
+            ) + [{"role": "user", "content": user_input}]
+
         result = Runner.run_sync(slack_agent, user_input)
-        
+
         print("----\n" + f"{result.final_output}")
+
 
 if __name__ == "__main__":
     # Run the manual test if the script is executed directly

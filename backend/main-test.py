@@ -12,7 +12,7 @@ from canvas_agent.canvas.canvas_assignments import *
 from canvas_agent.canvas.canvas_gradebook_history import get_student_grades
 import inspect
 from ai_check_agent.ai_checking import check_ai
-
+from slack_agent.slack_agent import monitor_slack_channel, send_slack_message, read_slack_messages, list_slack_channels
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -41,8 +41,14 @@ def main():
         read_discord_messages,
         create_discord_server
     ]
+    slack_tools = [
+        list_slack_channels,
+        read_slack_messages,
+        monitor_slack_channel,
+        send_slack_message
+    ]
     ai_check_tools = [check_ai]
-    all_tools = canvas_tools + discord_tools + ai_check_tools
+    all_tools = canvas_tools + discord_tools + ai_check_tools + slack_tools
     # canvas_agent = Agent(name="Canvas Agent",
     #               instructions="You are an assistant designed to help the user interact with the Canvas API. Your primary purpose is to perform actions in the Canvas API given the tools, and give information to the user based on what you can learn from querying the Canvas API and what they ask. Your primary course right now is course ID 11883051. This means that when unclear or in most cases, you are to respond about this course (unless explicitly asked to provide other information about other courses or data).",
     #               model="o4-mini",
@@ -59,7 +65,7 @@ def main():
 
     master_agent = Agent(name="Master",
                          instructions=make_instructions(
-                             11883051, 1365757418998464593, 1365757421938544721),
+                             11883051, 1365757418998464593, 1365757421938544721, "cse"),
                          model="o4-mini",
                          tools=all_tools)
 
