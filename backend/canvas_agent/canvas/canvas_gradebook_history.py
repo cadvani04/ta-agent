@@ -4,7 +4,7 @@ Canvas Gradebook History API
 This module provides functions to interact with the Canvas Gradebook History API.
 https://canvas.instructure.com/doc/api/gradebook_history.html
 """
-from openai_tools import *
+from canvas_agent.openai_tools import *
 
 
 # not being used rly
