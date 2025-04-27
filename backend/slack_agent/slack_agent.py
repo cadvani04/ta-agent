@@ -42,7 +42,7 @@ def list_slack_channels(course: str) -> List[Dict[str, Any]]:
     # Create a Slack client
     client = WebClient(token=token)
 
-    print(f"Listing channels in {course} workspace")
+    # print(f"Listing channels in {course} workspace")
 
     # Get the list of channels
     response = client.conversations_list(
@@ -58,7 +58,7 @@ def list_slack_channels(course: str) -> List[Dict[str, Any]]:
             "is_private": channel.get("is_private", False)
         })
 
-    print(f"Found {len(formatted_channels)} channels in {course} workspace")
+    # print(f"Found {len(formatted_channels)} channels in {course} workspace")
     return formatted_channels
 
 
@@ -85,7 +85,7 @@ def read_slack_messages(channel_id: str, limit: int, course: str) -> List[Dict[s
     # Create a Slack client
     client = WebClient(token=token)
 
-    print(f"Reading messages from channel {channel_id} in {course} workspace")
+    # print(f"Reading messages from channel {channel_id} in {course} workspace")
 
     # Get the messages
     response = client.conversations_history(channel=channel_id, limit=limit)
@@ -110,7 +110,7 @@ def read_slack_messages(channel_id: str, limit: int, course: str) -> List[Dict[s
             "attachments": [att.get("url", "") for att in msg.get("attachments", [])]
         })
 
-    print(f"Found {len(formatted_messages)} messages in channel {channel_id}")
+    # print(f"Found {len(formatted_messages)} messages in channel {channel_id}")
     return formatted_messages
 
 
@@ -207,7 +207,7 @@ def monitor_slack_channel(channel_id: str, duration: int, course: str) -> List[D
 
         # Process new messages
         if messages:
-            print(f"Found {len(messages)} new messages")
+            # print(f"Found {len(messages)} new messages")
 
             # Update latest timestamp
             latest_ts = messages[0]["ts"]

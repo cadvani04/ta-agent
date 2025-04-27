@@ -8,8 +8,11 @@ from agents import Agent, Runner
 from canvas_agent.openai_tools import *
 from canvas_agent.canvas.canvas_courses import get_all_courses, get_course
 from canvas_agent.canvas.canvas_assignments import create_assignment, get_assignments, edit_assignment, delete_assignment
-from canvas_agent.canvas.canvas_assignments import *
 from canvas_agent.canvas.canvas_gradebook_history import get_student_grades
+from canvas_agent.canvas.canvas_submissions import get_submissions
+from canvas_agent.canvas.canvas_quizzes import create_quiz, list_quizzes, get_quiz, edit_quiz, delete_quiz, reorder_quiz_items, validate_quiz_access_code
+from canvas_agent.canvas.canvas_quiz_submissions import list_quiz_submissions, get_quiz_submission, start_quiz_submission, update_quiz_submission, complete_quiz_submission, quiz_submission_time
+from canvas_agent.canvas.canvas_quiz_questions import list_quiz_questions, get_quiz_question, create_quiz_question, update_quiz_question, delete_quiz_question
 import inspect
 from ai_check_agent.ai_checking import check_ai
 from slack_agent.slack_agent import monitor_slack_channel, send_slack_message, read_slack_messages, list_slack_channels
@@ -35,7 +38,13 @@ def main():
 
     canvas_tools = [get_all_courses, get_course, create_assignment,
                     get_student_grades, get_assignments, edit_assignment,
-                    delete_assignment]
+                    delete_assignment, get_submissions, create_quiz,
+                    list_quizzes, get_quiz, edit_quiz,
+                    delete_quiz, reorder_quiz_items, validate_quiz_access_code,
+                    list_quiz_submissions, get_quiz_submission, start_quiz_submission,
+                    update_quiz_submission, complete_quiz_submission, quiz_submission_time,
+                    list_quiz_questions, get_quiz_question, create_quiz_question,
+                    update_quiz_question, delete_quiz_question]
     discord_tools = [
         list_discord_channels,
         read_discord_messages,

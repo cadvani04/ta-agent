@@ -2,3 +2,5 @@
 .env*
 .history/
 backend/.venv/
+backend/fastapi-backend/.python-version
+backend/src/

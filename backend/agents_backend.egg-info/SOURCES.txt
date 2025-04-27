@@ -3,6 +3,8 @@ backend/agents_backend.egg-info/PKG-INFO
 backend/agents_backend.egg-info/SOURCES.txt
 backend/agents_backend.egg-info/dependency_links.txt
 backend/agents_backend.egg-info/top_level.txt
+backend/ai_check_agent/__init__.py
+backend/ai_check_agent/ai_checking.py
 backend/canvas_agent/__init__.py
 backend/canvas_agent/openai_testing.py
 backend/canvas_agent/openai_tools.py
@@ -18,3 +20,5 @@ backend/discord_agent/main.py
 backend/discord_agent/test_discord.py
 backend/discord_agent/test_discord_openai.py
 backend/discord_agent/test_discord_read.py
+backend/slack_agent/__init__.py
+backend/slack_agent/slack_agent.py

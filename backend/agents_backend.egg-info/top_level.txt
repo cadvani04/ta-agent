@@ -1,2 +1,4 @@
+ai_check_agent
 canvas_agent
 discord_agent
+slack_agent
