@@ -146,6 +146,7 @@ def get_submissions(course_id: int, assignment_id: int) -> List[Dict[str, Any]]:
             - 'workflow_state' (str): e.g. 'graded', 'submitted', 'unsubmitted'
             - 'grade' (str or None): The letter or numeric grade (if graded)
             - 'score' (float or None): Numeric score (if graded)
+            - 'body' (str or None): The submission body (e.g., for online uploads)
             - 'submitted_at' (str or None): Timestamp when submitted (ISO 8601)
             - 'graded_at' (str or None): Timestamp when graded (ISO 8601)
             - 'late' (bool): Whether the submission was late
@@ -185,6 +186,7 @@ def get_submissions(course_id: int, assignment_id: int) -> List[Dict[str, Any]]:
             "workflow_state": sub.get("workflow_state"),
             "grade": sub.get("grade"),
             "score": sub.get("score"),
+            "body": sub.get("body"),
             "submitted_at": sub.get("submitted_at"),
             "graded_at": sub.get("graded_at"),
             "late": sub.get("late", False),
