@@ -8,10 +8,14 @@ from agents import Agent, Runner
 from canvas_agent.openai_tools import *
 from canvas_agent.canvas.canvas_courses import get_all_courses, get_course
 from canvas_agent.canvas.canvas_assignments import create_assignment, get_assignments, edit_assignment, delete_assignment
-from canvas_agent.canvas.canvas_assignments import *
-from canvas_agent.canvas.canvas_gradebook_history import get_student_grades, get_submissions
+from canvas_agent.canvas.canvas_gradebook_history import get_student_grades
+from canvas_agent.canvas.canvas_submissions import get_submissions
+from canvas_agent.canvas.canvas_quizzes import create_quiz, list_quizzes, get_quiz, edit_quiz, delete_quiz, reorder_quiz_items, validate_quiz_access_code
+from canvas_agent.canvas.canvas_quiz_submissions import list_quiz_submissions, get_quiz_submission, start_quiz_submission, update_quiz_submission, complete_quiz_submission, quiz_submission_time
+from canvas_agent.canvas.canvas_quiz_questions import list_quiz_questions, get_quiz_question, create_quiz_question, update_quiz_question, delete_quiz_question
 import inspect
 import asyncio
+from slack_agent.slack_agent import monitor_slack_channel, send_slack_message, read_slack_messages, list_slack_channels
 from openai.types.responses import ResponseTextDeltaEvent
 from ai_check_agent.ai_checking import check_ai
 
@@ -43,14 +47,26 @@ if not CANVAS_API_URL or not CANVAS_API_TOKEN:
 
 canvas_tools = [get_all_courses, get_course, create_assignment,
                 get_student_grades, get_assignments, edit_assignment,
-                delete_assignment]
+                delete_assignment, get_submissions, create_quiz,
+                list_quizzes, get_quiz, edit_quiz,
+                delete_quiz, reorder_quiz_items, validate_quiz_access_code,
+                list_quiz_submissions, get_quiz_submission, start_quiz_submission,
+                update_quiz_submission, complete_quiz_submission, quiz_submission_time,
+                list_quiz_questions, get_quiz_question, create_quiz_question,
+                update_quiz_question, delete_quiz_question]
 discord_tools = [
     list_discord_channels,
     read_discord_messages,
     create_discord_server
 ]
 ai_check_tools = [check_ai]
-all_tools = canvas_tools + discord_tools + ai_check_tools
+slack_tools = [
+    list_slack_channels,
+    read_slack_messages,
+    monitor_slack_channel,
+    send_slack_message
+]
+all_tools = canvas_tools + discord_tools + ai_check_tools + slack_tools
 # canvas_agent = Agent(name="Canvas Agent",
 #               instructions="You are an assistant designed to help the user interact with the Canvas API. Your primary purpose is to perform actions in the Canvas API given the tools, and give information to the user based on what you can learn from querying the Canvas API and what they ask. Your primary course right now is course ID 11883051. This means that when unclear or in most cases, you are to respond about this course (unless explicitly asked to provide other information about other courses or data).",
 #               model="o4-mini",
@@ -69,8 +85,8 @@ server_id = 1365757418998464593
 channel_id = 1365757421938544721
 
 master_agent = Agent(name="Master",
-                     instructions=make_instructions(
-                         course_id, server_id, channel_id),
+                     #  instructions=make_instructions(
+                     #      course_id, server_id, channel_id),
                      model="gpt-4o-mini",  # "o4-mini",
                      tools=all_tools)
 
