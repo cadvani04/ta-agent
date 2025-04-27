@@ -9,8 +9,10 @@ from canvas_agent.openai_tools import *
 from canvas_agent.canvas.canvas_courses import get_all_courses, get_course
 from canvas_agent.canvas.canvas_assignments import create_assignment, get_assignments, edit_assignment, delete_assignment
 from canvas_agent.canvas.canvas_assignments import *
-from canvas_agent.canvas.canvas_gradebook_history import get_student_grades 
+from canvas_agent.canvas.canvas_gradebook_history import get_student_grades
 import inspect
+import asyncio
+from openai.types.responses import ResponseTextDeltaEvent
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

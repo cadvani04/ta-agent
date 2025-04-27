@@ -1,2 +1,4 @@
 # ignore all “.env” files and variants
 .env*
+.history/
+backend/.venv/
