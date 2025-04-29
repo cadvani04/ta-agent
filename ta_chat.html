@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgentTA - TA Assistant</title>
+  <style>
+    :root {
+      --primary: #a78bfa;
+      --primary-light: #c4b5df;
+      --primary-dark: #8b5cf6;
+      --bg: #f9f7ff;
+      --text: #1f1f1f;
+      --placeholder: #9ca3af;
+      --border: #e5e7eb;
+      --shadow: rgba(137, 91, 246, 0.1);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;}
+    body { background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column;}
+    .chat-container { max-width:900px; width:100%; margin:0 auto; padding:20px; display:flex; flex-direction:column; height:100%;}
+    .course-select-container { display:flex; justify-content:center; width:100%; margin-bottom:15px; }
+    .course-select-container select { 
+      padding:10px 16px; 
+      width:220px; 
+      border-radius:12px; 
+      border:1px solid var(--primary-light); 
+      background-color:white; 
+      font-size:1rem; 
+      color:var(--primary-dark); 
+      box-shadow:0 2px 6px var(--shadow); 
+      appearance:none; 
+      background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%238b5cf6' stroke-width='2' class='h-4 w-4' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:right 12px center;
+      cursor:pointer;
+      transition:all 0.2s;
+    }
+    .course-select-container select:focus { 
+      outline:none; 
+      border-color:var(--primary); 
+      box-shadow:0 0 0 2px var(--primary-light); 
+    }
+    .course-select-container select:hover { 
+      border-color:var(--primary); 
+    }
+    .chat-header { padding:15px 0; text-align:center; margin-bottom:20px; color:var(--primary-dark); border-bottom:1px solid var(--primary-light); display:flex; flex-direction:column; align-items:center;}
+    .chat-header h1 { font-size:2rem; margin-bottom:5px; }
+    .chat-header p { color:var(--placeholder); font-size:1rem; }
+    .messages-container { flex:1; overflow-y:auto; padding:20px; background:white; border-radius:16px; border:1px solid var(--border); margin-bottom:20px; display:flex; flex-direction:column; box-shadow:0 5px 15px var(--shadow); }
+    .message { padding:12px 18px; margin-bottom:15px; border-radius:16px; max-width:85%; word-wrap:break-word; line-height:1.5; animation:fadeInUp 0.3s ease-out forwards;}
+    .user-message { background:var(--primary-light); color:var(--text); align-self:flex-end; margin-left:auto; border-bottom-right-radius:4px; }
+    .assistant-message { background:var(--bg); border:1px solid var(--border); align-self:flex-start; border-bottom-left-radius:4px; }
+    .thinking { align-self:flex-start; font-style:italic; color:var(--placeholder); margin-bottom:15px; display:flex; align-items:center;}
+    .thinking-dots { display:inline-flex; margin-left:5px;}
+    .thinking-dots span { width:6px; height:6px; border-radius:50%; background:var(--placeholder); margin:0 2px; animation:pulse 1.4s infinite ease-in-out; }
+    .thinking-dots span:nth-child(2) { animation-delay:0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay:0.4s; }
+    @keyframes pulse { 0%,80%,100%{transform:scale(0.6);opacity:0.6;} 40%{transform:scale(1);opacity:1;} }
+    @keyframes fadeInUp { from {opacity:0;transform:translateY(10px);} to {opacity:1;transform:translateY(0);} }
+    .input-container { display:flex; gap:10px; padding:15px; background:white; border-radius:16px; box-shadow:0 5px 15px var(--shadow); }
+    .message-input { flex:1; padding:15px; border-radius:12px; border:1px solid var(--border); font-size:16px; outline:none; resize:none; overflow-y:auto; min-height:56px; max-height:150px; line-height:1.5; }
+    .message-input:focus { border-color:var(--primary); }
+    .send-button { padding:0 25px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:600; transition:all 0.2s; display:flex; align-items:center; justify-content:center; min-width:100px; }
+    .send-button:hover { background:var(--primary-dark); transform:translateY(-2px); }
+    .send-button:active { transform:translateY(0); }
+    .send-button svg { margin-left:5px; }
+    pre { background:#f5f5f5; padding:12px; border-radius:8px; overflow-x:auto; margin:10px 0; font-family:'Courier New', Courier, monospace; font-size:14px; }
+    code { font-family:'Courier New', Courier, monospace; background:#f1f1f1; padding:2px 4px; border-radius:3px; font-size:0.9em; }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h1>AgenTA</h1>
+      <p>Your Teaching Assistant</p>
+    </div>
+    
+    <!-- Course dropdown -->
+    <div class="course-select-container">
+      <select id="courseSelect">
+        <option value="">— Select a course —</option>
+        <option data-course-id="11883045" data-guild-id="1365763509006372927" data-channel-id="1365763511040610365" data-slack-name="math" selected>MATH 19B</option>
+        <option data-course-id="11883049" data-guild-id="1365900889381933068" data-channel-id="1365900889381933071" data-slack-name="physics">PHYS 5A</option>
+        <option data-course-id="11883051" data-guild-id="1365757418998464593" data-channel-id="1365757421938544721" data-slack-name="cse">CSE 30</option>
+      </select>
+    </div>
+
+    <div class="messages-container" id="messagesContainer">
+      <div class="message assistant-message">
+        Hi there! I'm AgenTA, your Teaching Assistant. I can help with Canvas, Discord, Slack, and more. How can I assist you today?
+      </div>
+    </div>
+
+    <div class="input-container">
+      <textarea class="message-input" id="messageInput" placeholder="Ask me anything..." rows="1" autofocus></textarea>
+      <button class="send-button" id="sendButton">
+        Send
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const messagesContainer = document.getElementById('messagesContainer');
+      const messageInput       = document.getElementById('messageInput');
+      const sendButton         = document.getElementById('sendButton');
+      const courseSelect       = document.getElementById('courseSelect');
+      let ws = null, thinking = false, thinkingElement = null;
+
+      // WebSocket connect
+      function connectWebSocket() {
+        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(`${proto}//${window.location.host}/ws`);
+
+        ws.onopen    = () => console.log('WebSocket connected');
+        ws.onmessage = e => {
+          const data = JSON.parse(e.data);
+          if (data.type === 'thinking') {
+            showThinking();
+          } else if (data.type === 'response') {
+            hideThinking();
+            addMessage(data.content, /* isUser= */false);
+          } else if (data.type === 'error') {
+            hideThinking();
+            addErrorMessage(data.content);
+          }
+        };
+        ws.onerror = err => { console.error('WebSocket error', err); addErrorMessage('Connection error.'); };
+        ws.onclose = () => console.log('WebSocket disconnected');
+      }
+
+      // Auto-resize textarea
+      messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+      });
+
+      // Escape & formatting
+      function escapeHTML(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+      }
+      function formatMessage(text) {
+        let t = text.replace(/```([\s\S]*?)```/g, (_,c)=>`<pre>${escapeHTML(c)}</pre>`);
+        t = t.replace(/`([^`]+)`/g, (_,c)=>`<code>${escapeHTML(c)}</code>`);
+        return t.replace(/\n/g,'<br>');
+      }
+
+      // Add a chat bubble
+      function addMessage(content,isUser){
+        const el = document.createElement('div');
+        el.className = `message ${isUser?'user-message':'assistant-message'}`;
+        el.innerHTML = isUser ? escapeHTML(content) : formatMessage(content);
+        messagesContainer.appendChild(el);
+        scrollToBottom();
+      }
+      function addErrorMessage(content){
+        const el = document.createElement('div');
+        el.className = 'message assistant-message';
+        el.style.color = '#ef4444';
+        el.textContent = content;
+        messagesContainer.appendChild(el);
+        scrollToBottom();
+      }
+      function showThinking(){
+        if(thinking) return;
+        thinking = true;
+        thinkingElement = document.createElement('div');
+        thinkingElement.className='thinking';
+        thinkingElement.innerHTML='AgenTA is interfacing with its tools<div class="thinking-dots"><span></span><span></span><span></span></div>';
+        messagesContainer.appendChild(thinkingElement);
+        scrollToBottom();
+      }
+      function hideThinking(){
+        if(!thinking) return;
+        thinking = false;
+        thinkingElement?.remove();
+        thinkingElement = null;
+      }
+      function scrollToBottom(){
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+
+      // Send message
+      function sendMessage(){
+        const msg = messageInput.value.trim();
+        if(!msg) return;
+        addMessage(msg, true);
+        if(ws && ws.readyState===WebSocket.OPEN) {
+          ws.send(msg);
+        } else {
+          addErrorMessage('Connection lost. Refresh the page.');
+        }
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        messageInput.focus();
+      }
+      sendButton.addEventListener('click', sendMessage);
+      messageInput.addEventListener('keydown', e => {
+        if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+      });
+
+      // Course switch
+      courseSelect.addEventListener('change', () => {
+        const opt = courseSelect.options[courseSelect.selectedIndex];
+        if(!opt.value) return;
+        const payload = {
+          type: 'switch',
+          course_name: opt.text,
+          course_id: opt.dataset.courseId,
+          discord_server_id: opt.dataset.guildId,
+          discord_channel_id: opt.dataset.channelId,
+          slack_name: opt.dataset.slackName
+        };
+        // clear chat UI
+        messagesContainer.innerHTML = '';
+        // notify server
+        if(ws && ws.readyState===WebSocket.OPEN) {
+          ws.send(JSON.stringify(payload));
+        } else {
+          addErrorMessage('Connection lost. Refresh the page.');
+        }
+      });
+
+      // kick off
+      connectWebSocket();
+    });
+  </script>
+</body>
+</html>
