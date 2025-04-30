@@ -107,6 +107,7 @@ def read_discord_messages(guild_id: str, channel_id: str, limit: int, before: Op
 
 @function_tool()
 def create_discord_server(name: str) -> Dict[str, Any]:
+
     """
     Create a new Discord server.
     
@@ -172,6 +173,61 @@ def create_discord_server(name: str) -> Dict[str, Any]:
         "name": name,
         "invite_link": invite_link
     }
+
+@function_tool()
+def send_discord_message(channel_id: str, content: str, embed_title: Optional[str] = None, embed_description: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Send a message to a Discord channel.
+    
+    Args:
+        channel_id (str): The ID of the channel to send the message to
+        content (str): The text content of the message
+        embed_title (str, optional): Title for an embed, if desired
+        embed_description (str, optional): Description for an embed, if desired
+        
+    Returns:
+        Dict[str, Any]: Information about the sent message, including id, content, and timestamp
+    """
+    BASE_URL = "https://discord.com/api/v10"
+    headers = {
+        "Authorization": f"Bot {DISCORD_TOKEN}",
+        "Content-Type": "application/json",
+        "User-Agent": "DiscordBot (https://example.com, v1.0)"
+    }
+    
+    print(f"Sending message to channel {channel_id}")
+    
+    # Prepare the message data
+    message_data = {"content": content}
+    
+    # Add embed if title or description is provided
+    if embed_title or embed_description:
+        embed = {}
+        if embed_title:
+            embed["title"] = embed_title
+        if embed_description:
+            embed["description"] = embed_description
+        message_data["embeds"] = [embed]
+    
+    # Send the message
+    url = f"{BASE_URL}/channels/{channel_id}/messages"
+    response = requests.post(url, json=message_data, headers=headers)
+    
+    if response.status_code not in [200, 201]:
+        raise Exception(f"Error sending message: {response.status_code} - {response.text}")
+    
+    message = response.json()
+    
+    print(f"Message sent successfully with ID: {message['id']}")
+    
+    # Return a formatted response
+    return {
+        "id": message["id"],
+        "content": message["content"],
+        "channel_id": channel_id,
+        "timestamp": message["timestamp"]
+    }
+
 
 # Create a Discord client for real-time interaction
 intents = discord.Intents.default()
